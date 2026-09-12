@@ -1,0 +1,20 @@
+{
+  "name": "playwright-smart-pruning",
+  "version": "2.0.0",
+  "description": "Smart Viewport DOM Pruning technique for Playwright - 85% token reduction & low latency element extraction vs standard Microsoft Playwright snapshot",
+  "main": "src/pruner.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"See benchmark_results.json for empirical data\""
+  },
+  "keywords": [
+    "playwright",
+    "mcp",
+    "agentic-ai",
+    "token-optimization",
+    "dom-pruning",
+    "antigravity"
+  ],
+  "author": "cuong1",
+  "license": "MIT"
+}

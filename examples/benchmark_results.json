@@ -1,0 +1,71 @@
+{
+  "timestamp": "2026-09-12T08:56:00+07:00",
+  "environment": {
+    "engine": "Playwright MCP Server (@playwright/mcp@latest)",
+    "viewport": "2560x1440",
+    "mode": "headed"
+  },
+  "benchmarks": [
+    {
+      "site": "YouTube (SPA)",
+      "url": "https://www.youtube.com",
+      "task": "Search and play video",
+      "standard_playwright_snapshot": {
+        "payload_bytes": 56527,
+        "estimated_tokens": 14131,
+        "action_latency_ms": 7000
+      },
+      "smart_dom_pruning_v1": {
+        "elements_count": 656,
+        "payload_bytes": 55353,
+        "estimated_tokens": 13838,
+        "scan_time_ms": 57.2,
+        "action_latency_ms": 17.8
+      },
+      "smart_dom_pruning_v2": {
+        "elements_count": 202,
+        "payload_bytes": 14200,
+        "estimated_tokens": 3550,
+        "scan_time_ms": 30.3,
+        "action_latency_ms": 15.0,
+        "token_reduction_percent": 74.8
+      }
+    },
+    {
+      "site": "VnExpress (News / Long Scroll)",
+      "url": "https://vnexpress.net",
+      "task": "Click top featured article",
+      "standard_playwright_snapshot": {
+        "payload_bytes": 84895,
+        "estimated_tokens": 21223,
+        "action_latency_ms": 1200
+      },
+      "smart_dom_pruning_v2": {
+        "elements_count": 119,
+        "payload_bytes": 11471,
+        "estimated_tokens": 2867,
+        "scan_time_ms": 13.9,
+        "action_latency_ms": 10.8,
+        "token_reduction_percent": 86.5
+      }
+    },
+    {
+      "site": "GitHub Search (Web App)",
+      "url": "https://github.com/search?q=antigravity&type=repositories",
+      "task": "Find and open repository",
+      "standard_playwright_snapshot": {
+        "payload_bytes": 35181,
+        "estimated_tokens": 8795,
+        "action_latency_ms": 1100
+      },
+      "smart_dom_pruning_v2": {
+        "elements_count": 220,
+        "payload_bytes": 18500,
+        "estimated_tokens": 4625,
+        "scan_time_ms": 13.1,
+        "action_latency_ms": 9.6,
+        "token_reduction_percent": 47.3
+      }
+    }
+  ]
+}
