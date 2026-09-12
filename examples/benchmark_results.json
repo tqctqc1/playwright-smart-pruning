@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-12T08:56:00+07:00",
+  "timestamp": "2026-09-12T09:08:00+07:00",
   "environment": {
     "engine": "Playwright MCP Server (@playwright/mcp@latest)",
     "viewport": "2560x1440",
@@ -29,6 +29,14 @@
         "scan_time_ms": 30.3,
         "action_latency_ms": 15.0,
         "token_reduction_percent": 74.8
+      },
+      "smart_dom_pruning_v3": {
+        "elements_count": 82,
+        "payload_bytes": 2334,
+        "estimated_tokens": 544,
+        "scan_time_ms": 10.8,
+        "action_latency_ms": 10.4,
+        "token_reduction_percent": 96.1
       }
     },
     {
@@ -47,6 +55,14 @@
         "scan_time_ms": 13.9,
         "action_latency_ms": 10.8,
         "token_reduction_percent": 86.5
+      },
+      "smart_dom_pruning_v3": {
+        "elements_count": 76,
+        "payload_bytes": 2150,
+        "estimated_tokens": 480,
+        "scan_time_ms": 8.0,
+        "action_latency_ms": 10.8,
+        "token_reduction_percent": 97.7
       }
     },
     {
@@ -59,12 +75,20 @@
         "action_latency_ms": 1100
       },
       "smart_dom_pruning_v2": {
-        "elements_count": 220,
-        "payload_bytes": 18500,
-        "estimated_tokens": 4625,
-        "scan_time_ms": 13.1,
+        "elements_count": 94,
+        "payload_bytes": 3212,
+        "estimated_tokens": 803,
+        "scan_time_ms": 9.1,
         "action_latency_ms": 9.6,
-        "token_reduction_percent": 47.3
+        "token_reduction_percent": 90.8
+      },
+      "smart_dom_pruning_v3": {
+        "elements_count": 94,
+        "payload_bytes": 1960,
+        "estimated_tokens": 490,
+        "scan_time_ms": 5.3,
+        "action_latency_ms": 9.6,
+        "token_reduction_percent": 94.4
       }
     }
   ]
