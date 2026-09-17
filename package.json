@@ -1,20 +1,33 @@
 {
   "name": "playwright-smart-pruning",
-  "version": "2.0.0",
-  "description": "Smart Viewport DOM Pruning technique for Playwright - 85% token reduction & low latency element extraction vs standard Microsoft Playwright snapshot",
-  "main": "src/pruner.js",
+  "version": "3.2.0",
+  "description": "High-speed Smart Viewport DOM Pruning MCP Server for Browser Automation - 96% token reduction & sub-15ms interaction latency",
+  "main": "src/server.js",
+  "bin": {
+    "playwright-smart-pruning": "bin/cli.js",
+    "playwright-smart": "bin/cli.js"
+  },
   "type": "module",
   "scripts": {
-    "test": "echo \"See benchmark_results.json for empirical data\""
+    "start": "node src/server.js",
+    "test": "node test/test_mcp_client.js",
+    "test:browser": "node test/test_browser.js"
   },
   "keywords": [
     "playwright",
     "mcp",
+    "model-context-protocol",
     "agentic-ai",
     "token-optimization",
     "dom-pruning",
+    "browser-automation",
     "antigravity"
   ],
   "author": "cuong1",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "playwright": "^1.63.0",
+    "zod": "^3.24.2"
+  }
 }
