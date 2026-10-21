@@ -136,6 +136,18 @@ const schemas = {
       }
     }
   },
+  browser_resize: {
+    name: 'browser_resize',
+    description: 'Resize the page viewport (width x height in pixels)',
+    parameters: {
+      type: 'object',
+      properties: {
+        width: { type: 'number', description: 'Width in pixels (e.g. 1920)' },
+        height: { type: 'number', description: 'Height in pixels (e.g. 1080)' }
+      },
+      required: ['width', 'height']
+    }
+  },
   browser_tabs: {
     name: 'browser_tabs',
     description: 'Manage browser tabs: list active tabs, open new tab, switch tabs, or close tabs',

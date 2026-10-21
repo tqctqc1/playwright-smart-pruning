@@ -32,8 +32,11 @@ export class BrowserController {
       '--no-default-browser-check',
       '--no-first-run',
       '--disable-infobars',
-      '--window-size=1280,800'
+      '--start-maximized'
     ];
+    if (this.headless) {
+      launchArgs.push('--window-size=1920,1080');
+    }
 
     let browser = null;
 
@@ -54,12 +57,16 @@ export class BrowserController {
 
     this.browser = browser;
 
-    this.context = await browser.newContext({
-      viewport: { width: 1280, height: 800 },
-      deviceScaleFactor: 1,
+    const contextOptions = {
+      viewport: this.headless ? { width: 1920, height: 1080 } : null,
       locale: 'vi-VN',
       timezoneId: 'Asia/Ho_Chi_Minh'
-    });
+    };
+    if (this.headless) {
+      contextOptions.deviceScaleFactor = 1;
+    }
+
+    this.context = await browser.newContext(contextOptions);
 
     // 1. Network-level Ad & Tracker Filter
     await this.context.route('**/*', (route) => {
@@ -663,6 +670,15 @@ export class BrowserController {
     }
 
     throw new Error(`Unknown tabs action: ${action}`);
+  }
+
+  async resize(width, height) {
+    const page = await this.getPage();
+    if (width && height) {
+      await page.setViewportSize({ width: Number(width), height: Number(height) });
+      return { success: true, width: Number(width), height: Number(height) };
+    }
+    throw new Error('Width and height are required to resize viewport.');
   }
 
   async close() {

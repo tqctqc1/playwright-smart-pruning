@@ -332,7 +332,30 @@ server.tool(
   }
 );
 
-// 12. Tool: browser_tabs
+// 12. Tool: browser_resize
+server.tool(
+  'browser_resize',
+  'Resize the page viewport (width x height in pixels)',
+  {
+    width: z.number().describe('Width in pixels (e.g. 1920)'),
+    height: z.number().describe('Height in pixels (e.g. 1080)')
+  },
+  async ({ width, height }) => {
+    try {
+      const res = await controller.resize(width, height);
+      return {
+        content: [{ type: 'text', text: `Viewport resized to ${res.width}x${res.height}px.` }]
+      };
+    } catch (err) {
+      return {
+        isError: true,
+        content: [{ type: 'text', text: `Resize failed: ${err.message}` }]
+      };
+    }
+  }
+);
+
+// 13. Tool: browser_tabs
 server.tool(
   'browser_tabs',
   'Manage browser tabs: list active tabs, open new tab, switch tabs, or close tabs',

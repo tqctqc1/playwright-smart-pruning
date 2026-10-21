@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "playwright-smart-pruning": {
+      "command": "node",
+      "args": [
+        "src/server.js"
+      ]
+    }
+  }
+}

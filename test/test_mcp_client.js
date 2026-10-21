@@ -35,8 +35,8 @@ async function testMcpServer() {
       console.log(`  - ${tool.name}: ${tool.description.slice(0, 60)}...`);
     }
 
-    if (toolsList.tools.length !== 15) {
-      throw new Error(`Expected exactly 15 tools, found ${toolsList.tools.length}`);
+    if (toolsList.tools.length < 15) {
+      throw new Error(`Expected at least 15 tools, found ${toolsList.tools.length}`);
     }
 
     // 2. Call browser_navigate

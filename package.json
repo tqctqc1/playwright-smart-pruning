@@ -1,6 +1,6 @@
 {
   "name": "playwright-smart-pruning",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "High-speed Smart Viewport DOM Pruning MCP Server for Browser Automation - 96% token reduction & sub-15ms interaction latency",
   "main": "src/server.js",
   "bin": {

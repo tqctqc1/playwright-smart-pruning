@@ -46,6 +46,7 @@ Standard `@playwright/mcp` often encounters issues on heavy SPAs (YouTube, Twitt
 | `browser_handle_dialog` | `action` (`"accept"`, `"dismiss"`), `promptText` | Configure automated dialog handling and inspect last dialog |
 | `browser_scroll` | `direction`, `amount`, `autoSnapshot` | Scroll viewport and automatically return newly visible elements |
 | `browser_take_screenshot` | `fullPage`, `path` | Capture screenshot (interaction overlay is automatically hidden) |
+| `browser_resize` | `width`, `height` | Dynamically resize the page viewport dimensions (width x height in pixels) |
 | `browser_tabs` | `action` (`"list"`, `"new"`, `"switch"`, `"close"`), `index`, `url` | Multi-tab browser management |
 | `browser_evaluate` | `function` | Execute custom JavaScript code or arrow function in page context |
 | `browser_lock` | `action` (`"lock"`, `"unlock"`), `message` | Toggle non-intrusive HUD interaction lock overlay |

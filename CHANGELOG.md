@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.1] - 2026-10-21
+
+### Added
+- **Tool `browser_resize`**: Dynamically resize viewport dimensions (width x height in pixels) via MCP.
+- **Maximized Window Launch**: Chromium launches with `--start-maximized` and defaults to 1920x1080 in headless mode.
+
+### Changed
+- Exported and updated MCP tool schemas to include `browser_resize`.
+
 ## [3.2.0] - 2026-09-17
 
 ### Added
