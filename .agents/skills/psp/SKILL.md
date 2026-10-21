@@ -1,9 +1,9 @@
 ---
-name: browser
-description: Quick browser automation using high-speed Playwright Smart Pruning MCP server. Use /browser [url] to navigate, browse, search, and interact with web pages.
+name: psp
+description: Quick browser automation using high-speed Playwright Smart Pruning MCP server. Use /psp [url] to navigate, browse, search, and interact with web pages.
 ---
 
-# Browser Automation Quick Command (`/browser`)
+# Playwright Smart Pruning Quick Command (`/psp`)
 
 This skill activates high-speed web browsing and automation using **`playwright-smart-pruning`**.
 

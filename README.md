@@ -70,7 +70,7 @@ This will automatically:
 2. Register `playwright-smart-pruning` in **Claude Desktop** (`claude_desktop_config.json`).
 3. Register `playwright-smart-pruning` in **Claude Code CLI** (`~/.claude.json`).
 4. Install global slash commands:
-   - **Antigravity**: `/browser` and `/playwright-smart-pruning`
+   - **Antigravity**: `/psp` and `/playwright-smart-pruning`
    - **Claude Code**: `/playwright-smart-pruning <url>`
 
 ---
@@ -115,7 +115,7 @@ This will automatically:
 
 ---
 
-### ⚡ Cài Đặt 1-Chạm & Lệnh Nhanh (`/browser`)
+### ⚡ Cài Đặt 1-Chạm & Lệnh Nhanh (`/psp`)
 
 Chạy lệnh cài đặt tự động để tích hợp ngay lập tức vào **Antigravity**, **Claude Desktop** và **Claude Code CLI**:
 
@@ -132,7 +132,7 @@ Lệnh này sẽ tự động:
 2. Đăng ký server vào **Claude Desktop** (`claude_desktop_config.json`).
 3. Đăng ký server vào **Claude Code CLI** (`~/.claude.json`).
 4. Kích hoạt các lệnh nhanh (Slash Commands):
-   - **Antigravity**: `/browser` và `/playwright-smart-pruning`
+   - **Antigravity**: `/psp` và `/playwright-smart-pruning`
    - **Claude Code**: `/playwright-smart-pruning <url>` (ví dụ `/playwright-smart-pruning https://youtube.com`)
 
 ---
