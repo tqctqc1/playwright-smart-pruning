@@ -1,6 +1,6 @@
 {
   "name": "playwright-smart-pruning",
-  "version": "3.2.1",
+  "version": "3.3.0",
   "description": "High-speed Smart Viewport DOM Pruning MCP Server for Browser Automation - 96% token reduction & sub-15ms interaction latency",
   "main": "src/server.js",
   "bin": {
@@ -10,6 +10,7 @@
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
+    "setup": "node scripts/setup.js",
     "test": "node test/test_mcp_client.js",
     "test:browser": "node test/test_browser.js"
   },

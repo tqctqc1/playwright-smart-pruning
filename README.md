@@ -1,4 +1,4 @@
-# Playwright Smart Viewport DOM Pruner & Standalone MCP Server (v3.0)
+# Playwright Smart Viewport DOM Pruner & Standalone MCP Server (v3.3)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![MCP Server](https://img.shields.io/badge/MCP-Server%20Ready-success.svg)](https://modelcontextprotocol.io)
@@ -54,9 +54,28 @@ Standard `@playwright/mcp` often encounters issues on heavy SPAs (YouTube, Twitt
 
 ---
 
-### MCP Configuration
+### ⚡ 1-Click Setup (Antigravity & Claude)
 
-Add this server to your `mcp_config.json`:
+Run the automated setup to instantly configure Antigravity, Claude Desktop, and Claude Code CLI with zero manual configuration:
+
+```bash
+# Automated setup for all agents
+npm run setup
+# Or via CLI directly
+node bin/cli.js setup
+```
+
+This will automatically:
+1. Register `playwright-smart-pruning` in **Antigravity** (`mcp_config.json`).
+2. Register `playwright-smart-pruning` in **Claude Desktop** (`claude_desktop_config.json`).
+3. Register `playwright-smart-pruning` in **Claude Code CLI** (`~/.claude.json`).
+4. Install global slash commands:
+   - **Antigravity**: `/browser` and `/playwright-smart-pruning`
+   - **Claude Code**: `/browser <url>`
+
+---
+
+### Manual MCP Configuration (Optional)
 
 ```json
 {
@@ -93,6 +112,28 @@ Add this server to your `mcp_config.json`:
      [3] <input:text> Tìm kiếm
      [4] <button> Tìm kiếm
      ```
+
+---
+
+### ⚡ Cài Đặt 1-Chạm & Lệnh Nhanh (`/browser`)
+
+Chạy lệnh cài đặt tự động để tích hợp ngay lập tức vào **Antigravity**, **Claude Desktop** và **Claude Code CLI**:
+
+```bash
+# Cài đặt tự động vào toàn bộ Agent
+npm run setup
+
+# Hoặc qua CLI
+node bin/cli.js setup
+```
+
+Lệnh này sẽ tự động:
+1. Đăng ký server vào file cấu hình MCP của **Antigravity** (`mcp_config.json`).
+2. Đăng ký server vào **Claude Desktop** (`claude_desktop_config.json`).
+3. Đăng ký server vào **Claude Code CLI** (`~/.claude.json`).
+4. Kích hoạt các lệnh nhanh (Slash Commands):
+   - **Antigravity**: `/browser` và `/playwright-smart-pruning`
+   - **Claude Code**: `/browser <url>` (ví dụ `/browser https://youtube.com`)
 
 ---
 
