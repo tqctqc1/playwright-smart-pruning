@@ -117,18 +117,20 @@ try {
 // 5. Antigravity Global Skills (~/.gemini/config/skills/)
 const agGlobalSkillsDir = path.join(homeDir, '.gemini', 'config', 'skills');
 
-// Clean up legacy /browser skill if it exists to avoid shadowing native AG /browser
-const legacyBrowserSkill = path.join(agGlobalSkillsDir, 'browser');
-if (fs.existsSync(legacyBrowserSkill)) {
-  try {
-    fs.rmSync(legacyBrowserSkill, { recursive: true, force: true });
-    console.log(`🧹 [Antigravity] Removed legacy /browser skill from: ${legacyBrowserSkill}`);
-  } catch (err) {
-    console.warn(`⚠️ Could not remove legacy browser skill: ${err.message}`);
+// Clean up legacy skills (/browser, /psp) if they exist to avoid clutter and naming collisions
+for (const legacy of ['browser', 'psp']) {
+  const legacyDir = path.join(agGlobalSkillsDir, legacy);
+  if (fs.existsSync(legacyDir)) {
+    try {
+      fs.rmSync(legacyDir, { recursive: true, force: true });
+      console.log(`🧹 [Antigravity] Removed legacy skill from: ${legacyDir}`);
+    } catch (err) {
+      console.warn(`⚠️ Could not remove legacy ${legacy} skill: ${err.message}`);
+    }
   }
 }
 
-const skillsToCopy = ['playwright-smart-pruning', 'psp'];
+const skillsToCopy = ['playwright-smart-pruning'];
 
 for (const skillName of skillsToCopy) {
   try {
@@ -167,8 +169,7 @@ function printSummary() {
   console.log('--------------------------------------------------');
   console.log('⚡ Quick Commands Ready to Use:');
   console.log('  👉 In Antigravity:');
-  console.log('     /playwright-smart-pruning  - Activate detailed skill instructions');
-  console.log('     /psp                       - Quick browser navigation & automation');
+  console.log('     /playwright-smart-pruning [url] - High-speed browser navigation & automation');
   console.log('  👉 In Claude Code:');
   console.log('     /playwright-smart-pruning <url> - Direct browser automation');
   console.log('  👉 In Claude Desktop:');

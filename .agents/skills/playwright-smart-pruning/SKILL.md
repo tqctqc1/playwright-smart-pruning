@@ -1,11 +1,13 @@
 ---
 name: playwright-smart-pruning
-description: High-speed, token-optimized browser automation using the dedicated Playwright Smart Pruning MCP server (sub-15ms interactions, 96% token savings, anti-hang navigation).
+description: High-speed, token-optimized browser automation using the dedicated Playwright Smart Pruning MCP server (sub-15ms interactions, 96% token savings, anti-hang navigation). Use /playwright-smart-pruning [url] to navigate, browse, search, and interact with web pages.
 ---
 
 # Playwright Smart Pruning MCP Server (v3.3)
 
 This skill provides comprehensive instructions and best practices for browser automation using the independent **`playwright-smart-pruning`** MCP server.
+
+Use the slash command `/playwright-smart-pruning [url]` to directly launch and automate high-speed browsing sessions.
 
 ## ⚡ Why Use This Server Instead of Standard Playwright MCP?
 
