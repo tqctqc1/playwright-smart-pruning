@@ -98,17 +98,17 @@ if (claudeCodeSuccess) {
   console.log(`✅ [Claude Code] Configured MCP server in: ${claudeCodeConfigPath}`);
 }
 
-// 4. Claude Code Global Slash Command (~/.claude/commands/browser.md)
+// 4. Claude Code Global Slash Command (~/.claude/commands/playwright-smart-pruning.md)
 const globalClaudeCommandsDir = path.join(homeDir, '.claude', 'commands');
 try {
   if (!fs.existsSync(globalClaudeCommandsDir)) {
     fs.mkdirSync(globalClaudeCommandsDir, { recursive: true });
   }
-  const claudeCommandSrc = path.join(rootDir, '.claude', 'commands', 'browser.md');
-  const claudeCommandDest = path.join(globalClaudeCommandsDir, 'browser.md');
+  const claudeCommandSrc = path.join(rootDir, '.claude', 'commands', 'playwright-smart-pruning.md');
+  const claudeCommandDest = path.join(globalClaudeCommandsDir, 'playwright-smart-pruning.md');
   if (fs.existsSync(claudeCommandSrc)) {
     fs.copyFileSync(claudeCommandSrc, claudeCommandDest);
-    console.log(`✅ [Claude Code] Installed global slash command /browser at: ${claudeCommandDest}`);
+    console.log(`✅ [Claude Code] Installed global slash command /playwright-smart-pruning at: ${claudeCommandDest}`);
   }
 } catch (err) {
   console.warn(`⚠️ Could not install Claude global slash command: ${err.message}`);
@@ -158,7 +158,7 @@ function printSummary() {
   console.log('     /playwright-smart-pruning  - Activate detailed skill instructions');
   console.log('     /browser                   - Quick browser navigation & automation');
   console.log('  👉 In Claude Code:');
-  console.log('     /browser <url>             - Direct browser automation');
+  console.log('     /playwright-smart-pruning <url> - Direct browser automation');
   console.log('  👉 In Claude Desktop:');
   console.log('     Restart Claude Desktop to load "playwright-smart-pruning" tools.');
   console.log('--------------------------------------------------\n');

@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Multi-Agent Quick Commands (Slash Commands)**:
   - Antigravity Skills: `.agents/skills/playwright-smart-pruning/SKILL.md` and `.agents/skills/browser/SKILL.md` for workspace auto-discovery and `/browser` command execution.
-  - Claude Code Slash Command: `.claude/commands/browser.md` enabling `/browser <url>` inside Claude Code CLI.
+  - Claude Code Slash Command: `.claude/commands/playwright-smart-pruning.md` enabling `/playwright-smart-pruning <url>` inside Claude Code CLI.
 - **1-Click Setup CLI (`scripts/setup.js`)**:
   - Added `npm run setup` and `node bin/cli.js setup` / `install` to automatically register the MCP server into Antigravity, Claude Desktop, and Claude Code CLI, plus global skill/command distribution.
 - **CLI setup dispatcher**: `bin/cli.js` now routes setup/install flags directly to the automated installer.
