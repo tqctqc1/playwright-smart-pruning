@@ -23,11 +23,14 @@ server.tool(
       .default('domcontentloaded')
       .describe('Wait condition. Defaults to "domcontentloaded" to prevent hanging on SPA analytics/websockets'),
     timeout: z.number().optional().default(15000).describe('Navigation timeout in milliseconds (default: 15000)'),
-    autoSnapshot: z.boolean().optional().default(true).describe('Automatically return smart pruned viewport elements in response')
+    autoSnapshot: z.boolean().optional().default(true).describe('Automatically return smart pruned viewport elements in response'),
+    mode: z.enum(['existing', 'isolated'])
+      .optional()
+      .describe('Browser mode: "existing" attaches to the user\'s already-open Chrome via DevToolsActivePort; "isolated" launches a separate clean Chrome instance')
   },
-  async ({ url, waitUntil, timeout, autoSnapshot }) => {
+  async ({ url, waitUntil, timeout, autoSnapshot, mode }) => {
     try {
-      const res = await controller.navigate(url, { waitUntil, timeout, autoSnapshot });
+      const res = await controller.navigate(url, { waitUntil, timeout, autoSnapshot, mode });
       const summary = [
         `Navigated to: ${res.url}`,
         `Title: ${res.title}`,
@@ -362,11 +365,14 @@ server.tool(
   {
     action: z.enum(['list', 'new', 'switch', 'close']).describe('Action: "list", "new", "switch", or "close"'),
     index: z.number().optional().describe('Tab index (0-based) for switch or close actions'),
-    url: z.string().optional().describe('Initial URL when opening a new tab')
+    url: z.string().optional().describe('Initial URL when opening a new tab'),
+    mode: z.enum(['existing', 'isolated'])
+      .optional()
+      .describe('Browser mode: "existing" attaches to the user\'s already-open Chrome; "isolated" uses a separate clean Chrome instance')
   },
-  async ({ action, index, url }) => {
+  async ({ action, index, url, mode }) => {
     try {
-      const res = await controller.tabs(action, { index, url });
+      const res = await controller.tabs(action, { index, url, mode });
       let message = res.message || 'Success';
       if (action === 'list' && res.tabs) {
         message = res.tabs.map(t => `[${t.index}] ${t.isActive ? '* ' : '  '}${t.title || 'Untitled'} - ${t.url}`).join('\n');
