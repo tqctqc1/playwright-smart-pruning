@@ -24,8 +24,8 @@ Use the slash command `/playwright-smart-pruning [url]` to directly launch and a
 
 | Tool | Parameters | Description |
 |---|---|---|
-| `browser_navigate` | `url`, `waitUntil` (default: `domcontentloaded`), `timeout` (default: 15000), `autoSnapshot` (default: `true`) | Fast navigation. Automatically returns visible interactive elements in the response! |
-| `browser_snapshot` | `format` (`"semantic"` or `"json"`) | Scans viewport and assigns `data-ag-id` identifiers. Returns ultra-compact list. |
+| `browser_navigate` | `url`, `mode` (`"existing"` default \| `"isolated"`), `waitUntil` (default: `domcontentloaded`), `timeout` (default: 15000), `autoSnapshot` (default: `true`) | Fast navigation. Automatically attaches to open Chrome via `DevToolsActivePort` + Chrome 144+ Auto-Allow when `mode: "existing"`, and returns visible interactive elements! |
+| `browser_snapshot` | `format` (`"semantic"` or `"json"`), `mode` (`"existing"` \| `"isolated"`) | Scans viewport and assigns `data-ag-id` identifiers. Returns ultra-compact list. |
 | `browser_click` | `target`, `doubleClick` (bool), `autoSnapshot` (bool) | Instant in-page click (<15ms). Set `autoSnapshot: true` to get new elements immediately. |
 | `browser_type` | `target`, `text`, `submit` (bool), `clear` (bool), `autoSnapshot` (bool) | Instant input typing with React/Vue sync. Set `autoSnapshot: true` to get new elements immediately. |
 | `browser_hover` | `target` (e.g. `"1"` or selector/text) | Hover cursor over element (<15ms). |
@@ -36,7 +36,7 @@ Use the slash command `/playwright-smart-pruning [url]` to directly launch and a
 | `browser_scroll` | `direction` (`"down"`, `"up"`, `"top"`, `"bottom"`), `amount` (default: 600), `autoSnapshot` (default: `true`) | Scrolls viewport and automatically returns newly visible elements. |
 | `browser_take_screenshot` | `fullPage` (bool), `path` (string) | Captures screenshot (automatically hides HUD lock overlay). |
 | `browser_resize` | `width` (number), `height` (number) | Resizes viewport dimensions dynamically. |
-| `browser_tabs` | `action` (`"list"`, `"new"`, `"switch"`, `"close"`), `index`, `url` | Tab management. |
+| `browser_tabs` | `action` (`"list"`, `"new"`, `"switch"`, `"close"`), `index`, `url`, `mode` (`"existing"` \| `"isolated"`) | Tab management. |
 | `browser_evaluate` | `function` (string) | Evaluates custom JavaScript or arrow function in page context. |
 | `browser_lock` | `action` (`"lock"`, `"unlock"`), `message` (string) | Toggles agent HUD lock overlay to block accidental user interference. |
 | `browser_close` | *(none)* | Closes browser session cleanly. |
@@ -44,6 +44,11 @@ Use the slash command `/playwright-smart-pruning [url]` to directly launch and a
 ---
 
 ## 🎯 High-Speed Automation Golden Rules
+
+0. **Immediate First-Turn Invocation (Zero Pre-Check Policy)**:
+   - **NEVER** run terminal commands (`Get-Process`, `Test-NetConnection`, `Get-ChildItem`, reading `DevToolsActivePort` or inspecting `browser.js` / JSON schemas) before calling `playwright-smart-pruning` tools.
+   - Note: `run_command` on Windows runs in an isolated sandbox desktop (`MainWindowHandle = 0`) where UIAutomation cannot see `Chrome_WidgetWin_1`. Only the **`playwright-smart-pruning` MCP server** runs in the interactive desktop session with native `DevToolsActivePort` discovery, `_dismissStaleRemoteDebuggingDialogs`, and `_spawnRemoteDebuggingAutoAllow`.
+   - Call `browser_navigate` (with `mode: "existing"` for the user's open browser, or `"isolated"` for a separate browser) **immediately on the first tool call**.
 
 1. **Direct Deep-linking**: Never open a homepage just to type into a search bar! Navigate directly to the search URL:
    - YouTube: `https://www.youtube.com/results?search_query=...`
