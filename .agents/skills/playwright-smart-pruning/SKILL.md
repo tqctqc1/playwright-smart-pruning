@@ -26,18 +26,18 @@ Use the slash command `/playwright-smart-pruning [url]` to directly launch and a
 |---|---|---|
 | `browser_navigate` | `url`, `mode` (`"existing"` default \| `"isolated"`), `waitUntil` (default: `domcontentloaded`), `timeout` (default: 15000), `autoSnapshot` (default: `true`) | Fast navigation. Automatically attaches to open Chrome via `DevToolsActivePort` + Chrome 144+ Auto-Allow when `mode: "existing"`, and returns visible interactive elements! |
 | `browser_snapshot` | `format` (`"semantic"` or `"json"`), `mode` (`"existing"` \| `"isolated"`) | Scans viewport and assigns `data-ag-id` identifiers. Returns ultra-compact list. |
-| `browser_click` | `target`, `doubleClick` (bool), `autoSnapshot` (bool) | Instant in-page click (<15ms). Set `autoSnapshot: true` to get new elements immediately. |
-| `browser_type` | `target`, `text`, `submit` (bool), `clear` (bool), `autoSnapshot` (bool) | Instant input typing with React/Vue sync. Set `autoSnapshot: true` to get new elements immediately. |
+| `browser_click` | `target` (required — `data-ag-id` number/string, CSS selector, or text; `selector`/`id`/`ref` aliases supported), `doubleClick` (bool), `autoSnapshot` (bool) | Instant in-page click (<15ms). Set `autoSnapshot: true` to get new elements immediately. |
+| `browser_type` | `target` (required), `text` (required; `value` alias supported), `submit` (bool), `clear` (bool), `autoSnapshot` (bool) | Instant input typing with React/Vue & `contenteditable` sync. Set `autoSnapshot: true` to get new elements immediately. |
 | `browser_hover` | `target` (e.g. `"1"` or selector/text) | Hover cursor over element (<15ms). |
-| `browser_select_option` | `target` (e.g. `"1"` or selector), `value` (string) | Selects option from dropdown by value or text label. |
+| `browser_select_option` | `target` (e.g. `"1"` or selector), `value` (string; `label`/`option` aliases supported) | Selects option from dropdown by value or text label. |
 | `browser_press_key` | `key` (e.g. `"Enter"`), `autoSnapshot` (bool) | Presses keyboard key on active page. Set `autoSnapshot: true` to get new elements immediately. |
-| `browser_wait_for` | `selector`, `text`, `timeMs`, `state` | Waits for selector, text, or duration. |
+| `browser_wait_for` | `selector` (or `target`), `text`, `timeMs` (or `timeout`/`duration`), `state` | Waits for selector, text, or duration. |
 | `browser_handle_dialog` | `action` (`"accept"`, `"dismiss"`), `promptText` | Configures automated dialog handling and inspects last dialog. |
-| `browser_scroll` | `direction` (`"down"`, `"up"`, `"top"`, `"bottom"`), `amount` (default: 600), `autoSnapshot` (default: `true`) | Scrolls viewport and automatically returns newly visible elements. |
+| `browser_scroll` | `direction` (`"down"`, `"up"`, `"top"`, `"bottom"`), `amount` (default: 600), `autoSnapshot` (default: `true`) | Scrolls viewport (or largest inner scrollable container/modal) and automatically returns newly visible elements. |
 | `browser_take_screenshot` | `fullPage` (bool), `path` (string) | Captures screenshot (automatically hides HUD lock overlay). |
 | `browser_resize` | `width` (number), `height` (number) | Resizes viewport dimensions dynamically. |
-| `browser_tabs` | `action` (`"list"`, `"new"`, `"switch"`, `"close"`), `index`, `url`, `mode` (`"existing"` \| `"isolated"`) | Tab management. |
-| `browser_evaluate` | `function` (string) | Evaluates custom JavaScript or arrow function in page context. |
+| `browser_tabs` | `action` (`"list"`, `"new"`, `"switch"`, `"close"`), `index` (or `tabId`), `url`, `mode` (`"existing"` \| `"isolated"`) | Tab management. |
+| `browser_evaluate` | `function` (required — arrow function `"() => ..."`, IIFE `"(() => { ... })()"`, or JS code; `expression`/`script`/`code` aliases supported) | Evaluates custom JavaScript or arrow function in page context. |
 | `browser_lock` | `action` (`"lock"`, `"unlock"`), `message` (string) | Toggles agent HUD lock overlay to block accidental user interference. |
 | `browser_close` | *(none)* | Closes browser session cleanly. |
 

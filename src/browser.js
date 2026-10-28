@@ -290,15 +290,16 @@ export class BrowserController {
 
           await installContextEnhancements(this.context);
 
-          const existingPages = this.context.pages().filter(
-            p => !p.isClosed() && !p.url().startsWith('devtools://') && !p.url().startsWith('chrome-extension://')
-          );
+          const existingPages = this._getUsablePages();
           for (const p of existingPages) {
             setupPageListeners(p);
           }
 
           if (existingPages.length > 0) {
-            this.activePage = existingPages[existingPages.length - 1];
+            const webPages = existingPages.filter(p => /^https?:/i.test(p.url()));
+            this.activePage = webPages.length > 0
+              ? webPages[webPages.length - 1]
+              : existingPages[existingPages.length - 1];
           } else {
             const initialPage = await this.context.newPage();
             setupPageListeners(initialPage);
@@ -368,9 +369,19 @@ export class BrowserController {
 
   _getUsablePages() {
     if (!this.context) return [];
-    return this.context.pages().filter(
-      p => !p.isClosed() && !p.url().startsWith('devtools://') && !p.url().startsWith('chrome-extension://')
-    );
+    return this.context.pages().filter(p => {
+      if (p.isClosed()) return false;
+      const u = p.url();
+      if (
+        u.startsWith('devtools://') ||
+        u.startsWith('chrome-extension://') ||
+        u.startsWith('chrome-untrusted://') ||
+        u.includes('.top-chrome')
+      ) {
+        return false;
+      }
+      return true;
+    });
   }
 
   async getPage(requestedMode) {
@@ -379,7 +390,10 @@ export class BrowserController {
     if (!this.activePage || this.activePage.isClosed()) {
       const pages = this._getUsablePages();
       if (pages.length > 0) {
-        this.activePage = pages[pages.length - 1];
+        const webPages = pages.filter(p => /^https?:/i.test(p.url()));
+        this.activePage = webPages.length > 0
+          ? webPages[webPages.length - 1]
+          : pages[pages.length - 1];
       } else {
         this.activePage = await this.context.newPage();
       }
@@ -439,8 +453,8 @@ export class BrowserController {
     };
   }
 
-  async snapshot(format = 'semantic') {
-    const page = await this.getPage();
+  async snapshot(format = 'semantic', mode) {
+    const page = await this.getPage(mode);
     await page.waitForLoadState('domcontentloaded', { timeout: 3000 }).catch(() => {});
     const start = performance.now();
     const result = await page.evaluate(getViewportInteractiveElements, format);
@@ -462,9 +476,10 @@ export class BrowserController {
 
   async _maybeAutoSnapshot(page, autoSnapshot) {
     if (!autoSnapshot) return null;
-    await page.waitForLoadState('domcontentloaded', { timeout: 3000 }).catch(() => {});
-    await page.waitForTimeout(200);
-    const elements = await page.evaluate(getViewportInteractiveElements, 'semantic').catch(() => null);
+    const targetPage = (this.activePage && !this.activePage.isClosed()) ? this.activePage : page;
+    await targetPage.waitForLoadState('domcontentloaded', { timeout: 3000 }).catch(() => {});
+    await targetPage.waitForTimeout(200);
+    const elements = await targetPage.evaluate(getViewportInteractiveElements, 'semantic').catch(() => null);
     const elementCount = elements ? elements.split('\n').filter(Boolean).length : 0;
     return { elements, elementCount };
   }
@@ -830,14 +845,42 @@ export class BrowserController {
 
   async evaluate(script) {
     const page = await this.getPage();
-    const result = await page.evaluate((code) => {
-      const trimmed = code.trim();
-      // If code is an arrow function or function expression, execute it and return result
-      if (/^(async\s+)?(\([^)]*\)|[a-zA-Z_$][\w$]*)\s*=>/.test(trimmed) || /^(async\s+)?function\b/.test(trimmed)) {
-        const fn = new Function('return (' + trimmed + ')()');
-        return fn();
+    const result = await page.evaluate(async (code) => {
+      const trimmed = String(code || '').trim();
+      if (!trimmed) return undefined;
+
+      // 1. Try compiling as a single parenthesized expression (arrow function, async function, IIFE, or plain expression)
+      let exprFn = null;
+      try {
+        exprFn = new Function('return (' + trimmed + ')');
+      } catch (_) {
+        exprFn = null;
       }
-      return window.eval(code);
+
+      if (exprFn) {
+        const val = await exprFn();
+        if (typeof val === 'function') {
+          return await val();
+        }
+        return val;
+      }
+
+      // 2. Multi-statement code: if it has top-level return or await, run inside an async IIFE
+      if (/\b(return|await)\b/.test(trimmed)) {
+        const asyncBodyFn = new Function('return (async () => {\n' + trimmed + '\n})()');
+        return await asyncBodyFn();
+      }
+
+      // 3. Fallback to window.eval for multi-statement REPL expressions without return, with async IIFE fallback
+      try {
+        return await window.eval(trimmed);
+      } catch (err) {
+        if (err instanceof SyntaxError) {
+          const asyncBodyFn = new Function('return (async () => {\n' + trimmed + '\n})()');
+          return await asyncBodyFn();
+        }
+        throw err;
+      }
     }, script);
 
     return {

@@ -33,15 +33,21 @@ export function getViewportInteractiveElements(format = 'semantic') {
     // Ignore pure decorative SVG / canvas / metadata elements
     if (['svg', 'path', 'g', 'use', 'circle', 'rect', 'polygon', 'script', 'style', 'meta', 'link', 'noscript'].includes(tag)) return false;
 
-    // 1. Native interactive form elements
-    if (['button', 'input', 'select', 'textarea'].includes(tag)) return true;
+    // 1. Native interactive form & disclosure elements
+    if (tag === 'input') return el.type !== 'hidden';
+    if (['button', 'select', 'textarea', 'summary'].includes(tag)) return true;
+    if (el.isContentEditable && el.getAttribute('contenteditable') !== 'false') return true;
     if (tag === 'a') {
       return el.hasAttribute('href') || el.onclick != null || el.getAttribute('role') != null || (el.innerText || '').trim().length > 0;
     }
 
     // 2. Explicit ARIA interactive roles
     const role = el.getAttribute('role');
-    if (['button', 'link', 'checkbox', 'menuitem', 'tab', 'option', 'radio', 'switch', 'combobox', 'searchbox'].includes(role)) return true;
+    if ([
+      'button', 'link', 'checkbox', 'menuitem', 'menuitemcheckbox', 'menuitemradio',
+      'tab', 'option', 'radio', 'switch', 'combobox', 'searchbox', 'textbox',
+      'slider', 'spinbutton', 'treeitem'
+    ].includes(role)) return true;
 
     // 3. Explicit click listeners or action attributes
     if (el.onclick != null || el.getAttribute('onclick') != null || el.hasAttribute('data-action') || el.hasAttribute('data-click')) return true;
@@ -55,8 +61,12 @@ export function getViewportInteractiveElements(format = 'semantic') {
       // If it contains other interactive elements, it is merely a wrapper
       if (el.querySelector('a, button, input, select, textarea, [role="button"], [role="link"]')) return false;
 
-      // Card-aware anti-nesting: Suppress descendant div/span if an ancestor card already has an anchor or button
-      const parentCard = el.closest('a, button, [role="button"], [role="link"], article, li, [class*="card"], [class*="item"], [class*="video"]');
+      // Card-aware anti-nesting: Suppress descendant div/span if an ancestor card/item/row already has an anchor or button
+      const parentCard = el.closest(
+        'a, button, summary, [role="button"], [role="link"], [role="article"], [role="listitem"], [role="row"], article, li, tr, ' +
+        'ytd-video-renderer, ytd-rich-item-renderer, ytd-compact-video-renderer, ytd-grid-video-renderer, yt-lockup-view-model, ' +
+        '[class*="card" i], [class*="item" i], [class*="video" i], [class*="product" i], [class*="result" i], [class*="post" i]'
+      );
       if (parentCard) {
         if (['a', 'button'].includes(parentCard.tagName.toLowerCase()) || parentCard.getAttribute('role') === 'button') {
           return false;
@@ -70,6 +80,9 @@ export function getViewportInteractiveElements(format = 'semantic') {
       const text = (el.innerText || el.getAttribute('aria-label') || el.getAttribute('title') || '').trim();
       if (!text || text.length < 2) return false;
       if (/(\d+\s*(views|lượt xem)|ago|trước|•|Sponsored|Được tài trợ)/i.test(text)) return false;
+      if (/^\d+([.,]\d+)?\s*(K|M|B|N|Tr|T|triệu|nghìn|tỷ)?$/i.test(text)) return false;
+      if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(text)) return false;
+      if (/^(Mới|New|Live|Trực tiếp|4K|HD|CC)$/i.test(text)) return false;
 
       return true;
     }
@@ -108,14 +121,17 @@ export function getViewportInteractiveElements(format = 'semantic') {
       }
 
       if (!text && el.querySelector('img[alt]')) text = el.querySelector('img[alt]').getAttribute('alt').trim();
-      if (!text && !['input', 'select', 'textarea'].includes(tag)) return;
+      const isEditableField = ['input', 'select', 'textarea'].includes(tag) ||
+        (el.isContentEditable && el.getAttribute('contenteditable') !== 'false') ||
+        ['textbox', 'searchbox', 'combobox'].includes(el.getAttribute('role'));
+      if (!text && !isEditableField) return;
       if (['•', '|', '/', '-', '·'].includes(text)) return;
 
       id++;
       el.setAttribute('data-ag-id', id.toString());
       const role = el.getAttribute('role') || undefined;
       const type = el.getAttribute('type') || role || undefined;
-      const cleanText = text.slice(0, 80);
+      const cleanText = text.slice(0, 140);
 
       items.push({ id, tag, type, text: cleanText });
       lines.push(`[${id}] <${tag}${type ? ':' + type : ''}> ${cleanText}`);

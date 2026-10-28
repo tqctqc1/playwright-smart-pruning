@@ -35,19 +35,32 @@ export function resolveElement(target) {
     if (el) return el;
   } catch (e) {}
 
-  // 4. Try matching common attributes: name, placeholder, aria-label, id
+  // 4. Try matching common attributes: name, placeholder, aria-label, title, id
   try {
     const escaped = CSS.escape ? CSS.escape(strTarget) : strTarget.replace(/["\\]/g, '\\$&');
-    const byAttr = document.querySelector(`[name="${escaped}"], [placeholder="${escaped}"], [aria-label="${escaped}"]`);
+    const byAttr = document.querySelector(`[name="${escaped}"], [placeholder="${escaped}"], [aria-label="${escaped}"], [title="${escaped}"], #${escaped}`);
     if (byAttr) return byAttr;
   } catch (e) {}
 
-  // 5. Try matching text content on interactive elements
-  const candidates = document.querySelectorAll('button, a, input, select, textarea, [role="button"], [role="link"], [tabindex]');
+  // 5. Try matching text content on interactive elements (exact match first, then substring fallback)
+  const candidates = document.querySelectorAll(
+    'button, a, input, select, textarea, summary, [contenteditable="true"], ' +
+    '[role="button"], [role="link"], [role="menuitem"], [role="tab"], [role="option"], ' +
+    '[role="combobox"], [role="searchbox"], [role="textbox"], [role="checkbox"], [role="radio"], [role="switch"], [tabindex]'
+  );
+  const lowerTarget = strTarget.toLowerCase();
   for (const c of candidates) {
-    const txt = (c.innerText || c.value || c.getAttribute('aria-label') || '').trim();
-    if (txt === strTarget || txt.toLowerCase() === strTarget.toLowerCase()) {
+    const txt = (c.innerText || c.value || c.getAttribute('aria-label') || c.getAttribute('placeholder') || c.getAttribute('title') || '').trim();
+    if (txt === strTarget || txt.toLowerCase() === lowerTarget) {
       return c;
+    }
+  }
+  if (lowerTarget.length >= 2) {
+    for (const c of candidates) {
+      const txt = (c.innerText || c.value || c.getAttribute('aria-label') || c.getAttribute('placeholder') || c.getAttribute('title') || '').trim().toLowerCase();
+      if (txt && txt.includes(lowerTarget)) {
+        return c;
+      }
     }
   }
 
@@ -197,6 +210,47 @@ export function typeIntoElement(target, text, options = {}) {
     try { el.focus(); } catch (e) {}
   }
 
+  // Handle contenteditable / rich-text editors (Facebook, Messenger, Gmail, Notion, Discord, X, etc.)
+  const isContentEditable = el.isContentEditable || el.getAttribute('contenteditable') === 'true' ||
+    (el.getAttribute('role') === 'textbox' && !('value' in el));
+
+  if (isContentEditable) {
+    try {
+      if (clear) {
+        document.execCommand('selectAll', false, null);
+        document.execCommand('delete', false, null);
+        if ((el.innerText || '').trim().length > 0) {
+          el.textContent = '';
+        }
+      }
+      const inserted = document.execCommand('insertText', false, text);
+      if (!inserted) {
+        el.textContent = clear ? text : (el.textContent || '') + text;
+        if (typeof InputEvent !== 'undefined') {
+          el.dispatchEvent(new InputEvent('input', { bubbles: true, cancelable: true, inputType: 'insertText', data: text }));
+        } else {
+          el.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+        }
+      }
+    } catch (_) {
+      el.textContent = clear ? text : (el.textContent || '') + text;
+      el.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    }
+
+    if (submit) {
+      el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, composed: true }));
+      el.dispatchEvent(new KeyboardEvent('keypress', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, composed: true }));
+      el.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, composed: true }));
+    }
+
+    return {
+      success: true,
+      id: el.getAttribute('data-ag-id') || null,
+      tag: el.tagName.toLowerCase(),
+      value: (el.innerText || el.textContent || '').trim()
+    };
+  }
+
   const finalValue = clear ? text : (el.value || '') + text;
 
   // React/Vue controlled component prototype descriptor setter trick
@@ -244,6 +298,7 @@ export function typeIntoElement(target, text, options = {}) {
 
 export function scrollPage(direction = 'down', amount = 600) {
   const dir = String(direction).toLowerCase();
+  const prevY = window.scrollY;
   let delta = 0;
 
   if (dir === 'top') {
@@ -258,9 +313,43 @@ export function scrollPage(direction = 'down', amount = 600) {
     window.scrollBy({ top: delta, behavior: 'instant' });
   }
 
+  // Fallback for SPAs, modals, chat panes, and dashboards where an inner container scrolls instead of window
+  if (window.scrollY === prevY) {
+    let bestContainer = null;
+    let bestArea = 0;
+    const candidates = document.querySelectorAll('main, [role="main"], [role="dialog"], [role="listbox"], section, article, div, ul');
+    for (const el of candidates) {
+      if (el.scrollHeight <= el.clientHeight + 20) continue;
+      const style = window.getComputedStyle(el);
+      if (!['auto', 'scroll', 'overlay'].includes(style.overflowY)) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width <= 0 || r.height <= 0) continue;
+      const area = r.width * r.height;
+      if (area > bestArea) {
+        bestArea = area;
+        bestContainer = el;
+      }
+    }
+    if (bestContainer) {
+      if (dir === 'top') {
+        bestContainer.scrollTop = 0;
+      } else if (dir === 'bottom') {
+        bestContainer.scrollTop = bestContainer.scrollHeight;
+      } else {
+        bestContainer.scrollTop += delta;
+      }
+      return {
+        scrollX: bestContainer.scrollLeft,
+        scrollY: Math.round(bestContainer.scrollTop),
+        scrollHeight: bestContainer.scrollHeight,
+        viewportHeight: bestContainer.clientHeight
+      };
+    }
+  }
+
   return {
     scrollX: window.scrollX,
-    scrollY: window.scrollY,
+    scrollY: Math.round(window.scrollY),
     scrollHeight: document.body.scrollHeight,
     viewportHeight: window.innerHeight
   };

@@ -59,11 +59,12 @@ server.tool(
   'browser_snapshot',
   'Execute Smart Viewport DOM Pruner (v3.1): Extracts only visible, high-intent interactive elements tagged with data-ag-id, slashing token usage by 95% vs accessibility snapshots',
   {
-    format: z.enum(['semantic', 'json']).optional().default('semantic').describe('Format: "semantic" (compact lines) or "json"')
+    format: z.enum(['semantic', 'json']).optional().default('semantic').describe('Format: "semantic" (compact lines) or "json"'),
+    mode: z.enum(['existing', 'isolated']).optional().describe('Browser mode: "existing" or "isolated"')
   },
-  async ({ format }) => {
+  async ({ format, mode }) => {
     try {
-      const res = await controller.snapshot(format);
+      const res = await controller.snapshot(format, mode);
       const elementsOutput = format === 'semantic' ? res.elements : JSON.stringify(res.elements, null, 2);
       const text = [
         `Page: ${res.title} (${res.url})`,
@@ -88,14 +89,21 @@ server.tool(
   'browser_click',
   'Click an element using in-page synthetic pointer events + native fallback (<15ms latency). Target with data-ag-id number, CSS selector, or element text',
   {
-    target: z.union([z.string(), z.number()]).describe('Target element ID (e.g. 1 or "1" from data-ag-id), CSS selector (e.g. "button#submit", "input"), or text'),
+    target: z.union([z.string(), z.number()]).optional().describe('Target element ID (e.g. 1 or "1" from data-ag-id), CSS selector (e.g. "button#submit", "input"), or text'),
+    selector: z.union([z.string(), z.number()]).optional().describe('Alias for target (CSS selector or data-ag-id)'),
+    id: z.union([z.string(), z.number()]).optional().describe('Alias for target (data-ag-id)'),
+    ref: z.union([z.string(), z.number()]).optional().describe('Alias for target (element ref or data-ag-id)'),
     element: z.string().optional().describe('Optional human-readable description for clarity'),
     doubleClick: z.boolean().optional().default(false).describe('Perform double-click if true'),
     autoSnapshot: z.boolean().optional().default(false).describe('Automatically return newly visible interactive elements in response after click')
   },
-  async ({ target, doubleClick, autoSnapshot }) => {
+  async ({ target, selector, id, ref, doubleClick, autoSnapshot }) => {
     try {
-      const res = await controller.click(target, { doubleClick, autoSnapshot });
+      const resolvedTarget = target ?? selector ?? id ?? ref;
+      if (resolvedTarget === undefined || resolvedTarget === null || resolvedTarget === '') {
+        throw new Error('Missing required parameter: provide "target" (or "selector" / "id").');
+      }
+      const res = await controller.click(resolvedTarget, { doubleClick, autoSnapshot });
       const navInfo = res.navigated ? ` (triggered navigation to ${res.url || 'new page'})` : '';
       let text = `Clicked [${res.id || res.target}] <${res.tag || 'element'}> "${res.text || ''}" in ${res.latencyMs}ms${navInfo}.`;
       if (autoSnapshot && res.elements) {
@@ -118,17 +126,29 @@ server.tool(
   'browser_type',
   'Type text into an input field or textarea with React 18/Vue 3 prototype setter synchronization and optional form submission/Enter',
   {
-    target: z.union([z.string(), z.number()]).describe('Target element ID (e.g. 1 or "1" from data-ag-id), CSS selector (e.g. "input#q"), or text'),
-    text: z.string().describe('Text to type into the element'),
+    target: z.union([z.string(), z.number()]).optional().describe('Target element ID (e.g. 1 or "1" from data-ag-id), CSS selector (e.g. "input#q"), or text'),
+    selector: z.union([z.string(), z.number()]).optional().describe('Alias for target (CSS selector or data-ag-id)'),
+    id: z.union([z.string(), z.number()]).optional().describe('Alias for target (data-ag-id)'),
+    ref: z.union([z.string(), z.number()]).optional().describe('Alias for target (element ref or data-ag-id)'),
+    text: z.string().optional().describe('Text to type into the element'),
+    value: z.string().optional().describe('Alias for text (value to type into the element)'),
     element: z.string().optional().describe('Optional human-readable element description'),
     submit: z.boolean().optional().default(false).describe('Submit form or press Enter after typing'),
     clear: z.boolean().optional().default(true).describe('Clear existing input text before typing'),
     autoSnapshot: z.boolean().optional().default(false).describe('Automatically return newly visible interactive elements in response after typing/submitting')
   },
-  async ({ target, text, submit, clear, autoSnapshot }) => {
+  async ({ target, selector, id, ref, text, value, submit, clear, autoSnapshot }) => {
     try {
-      const res = await controller.type(target, text, { submit, clear, autoSnapshot });
-      let textOutput = `Typed into [${res.id || res.target}] <${res.tag || 'input'}>: "${text}"${submit ? ' (submitted)' : ''} in ${res.latencyMs}ms.`;
+      const resolvedTarget = target ?? selector ?? id ?? ref;
+      const resolvedText = text ?? value;
+      if (resolvedTarget === undefined || resolvedTarget === null || resolvedTarget === '') {
+        throw new Error('Missing required parameter: provide "target" (or "selector" / "id").');
+      }
+      if (resolvedText === undefined || resolvedText === null) {
+        throw new Error('Missing required parameter: provide "text" (or "value").');
+      }
+      const res = await controller.type(resolvedTarget, resolvedText, { submit, clear, autoSnapshot });
+      let textOutput = `Typed into [${res.id || res.target}] <${res.tag || 'input'}>: "${resolvedText}"${submit ? ' (submitted)' : ''} in ${res.latencyMs}ms.`;
       if (autoSnapshot && res.elements) {
         textOutput += `\n\n--- Visible Interactive Elements (${res.elementCount || 0}) ---\n${res.elements}`;
       }
@@ -149,12 +169,19 @@ server.tool(
   'browser_hover',
   'Hover cursor over an element to trigger dropdowns, menus, tooltips, or hover animations (<15ms latency)',
   {
-    target: z.union([z.string(), z.number()]).describe('Target element ID (e.g. 1 or "1" from data-ag-id), CSS selector, or text'),
+    target: z.union([z.string(), z.number()]).optional().describe('Target element ID (e.g. 1 or "1" from data-ag-id), CSS selector, or text'),
+    selector: z.union([z.string(), z.number()]).optional().describe('Alias for target (CSS selector or data-ag-id)'),
+    id: z.union([z.string(), z.number()]).optional().describe('Alias for target (data-ag-id)'),
+    ref: z.union([z.string(), z.number()]).optional().describe('Alias for target (element ref or data-ag-id)'),
     element: z.string().optional().describe('Optional human-readable element description')
   },
-  async ({ target }) => {
+  async ({ target, selector, id, ref }) => {
     try {
-      const res = await controller.hover(target);
+      const resolvedTarget = target ?? selector ?? id ?? ref;
+      if (resolvedTarget === undefined || resolvedTarget === null || resolvedTarget === '') {
+        throw new Error('Missing required parameter: provide "target" (or "selector" / "id").');
+      }
+      const res = await controller.hover(resolvedTarget);
       return {
         content: [{
           type: 'text',
@@ -175,12 +202,25 @@ server.tool(
   'browser_select_option',
   'Select an option from a dropdown (<select>) element by option value or visible text label',
   {
-    target: z.union([z.string(), z.number()]).describe('Target <select> element ID (e.g. 1 from data-ag-id) or CSS selector'),
-    value: z.string().describe('Option value or visible text label to select')
+    target: z.union([z.string(), z.number()]).optional().describe('Target <select> element ID (e.g. 1 from data-ag-id) or CSS selector'),
+    selector: z.union([z.string(), z.number()]).optional().describe('Alias for target (CSS selector or data-ag-id)'),
+    id: z.union([z.string(), z.number()]).optional().describe('Alias for target (data-ag-id)'),
+    ref: z.union([z.string(), z.number()]).optional().describe('Alias for target (element ref or data-ag-id)'),
+    value: z.string().optional().describe('Option value or visible text label to select'),
+    label: z.string().optional().describe('Alias for value (visible text label to select)'),
+    option: z.string().optional().describe('Alias for value (option to select)')
   },
-  async ({ target, value }) => {
+  async ({ target, selector, id, ref, value, label, option }) => {
     try {
-      const res = await controller.selectOption(target, value);
+      const resolvedTarget = target ?? selector ?? id ?? ref;
+      const resolvedValue = value ?? label ?? option;
+      if (resolvedTarget === undefined || resolvedTarget === null || resolvedTarget === '') {
+        throw new Error('Missing required parameter: provide "target" (or "selector" / "id").');
+      }
+      if (resolvedValue === undefined || resolvedValue === null) {
+        throw new Error('Missing required parameter: provide "value" (or "label" / "option").');
+      }
+      const res = await controller.selectOption(resolvedTarget, resolvedValue);
       return {
         content: [{
           type: 'text',
@@ -201,18 +241,23 @@ server.tool(
   'browser_press_key',
   'Press a keyboard key on the active page (e.g. "Enter", "Tab", "Escape", "ArrowDown", "PageDown", "Control+A")',
   {
-    key: z.string().describe('Key name to press (e.g. "Enter", "Escape", "Tab", "ArrowDown", "PageDown")'),
+    key: z.string().optional().describe('Key name to press (e.g. "Enter", "Escape", "Tab", "ArrowDown", "PageDown")'),
+    text: z.string().optional().describe('Alias for key'),
     autoSnapshot: z.boolean().optional().default(false).describe('Automatically return newly visible interactive elements in response after pressing key')
   },
-  async ({ key, autoSnapshot }) => {
+  async ({ key, text, autoSnapshot }) => {
     try {
-      const res = await controller.pressKey(key, { autoSnapshot });
-      let text = `Pressed key "${res.key}" in ${res.latencyMs}ms.`;
+      const resolvedKey = key ?? text;
+      if (!resolvedKey) {
+        throw new Error('Missing required parameter: provide "key".');
+      }
+      const res = await controller.pressKey(resolvedKey, { autoSnapshot });
+      let outText = `Pressed key "${res.key}" in ${res.latencyMs}ms.`;
       if (autoSnapshot && res.elements) {
-        text += `\n\n--- Visible Interactive Elements (${res.elementCount || 0}) ---\n${res.elements}`;
+        outText += `\n\n--- Visible Interactive Elements (${res.elementCount || 0}) ---\n${res.elements}`;
       }
       return {
-        content: [{ type: 'text', text }]
+        content: [{ type: 'text', text: outText }]
       };
     } catch (err) {
       return {
@@ -228,14 +273,31 @@ server.tool(
   'browser_wait_for',
   'Wait for an element, text, or specific duration before taking further action',
   {
-    selector: z.string().optional().describe('Wait for a CSS selector or data-ag-id to appear'),
+    selector: z.union([z.string(), z.number()]).optional().describe('Wait for a CSS selector or data-ag-id to appear'),
+    target: z.union([z.string(), z.number()]).optional().describe('Alias for selector (CSS selector or data-ag-id)'),
     text: z.string().optional().describe('Wait for specific text to appear anywhere in the page'),
     timeMs: z.number().optional().describe('Wait for specific time in milliseconds (e.g. 1000)'),
-    state: z.enum(['visible', 'attached', 'hidden']).optional().default('visible').describe('Target element state')
+    timeout: z.number().optional().describe('Timeout in milliseconds (or wait duration if selector/text is omitted)'),
+    duration: z.number().optional().describe('Alias for timeMs (if <= 30 treated as seconds, otherwise milliseconds)'),
+    state: z.enum(['visible', 'attached', 'hidden', 'detached']).optional().default('visible').describe('Target element state')
   },
-  async ({ selector, text, timeMs, state }) => {
+  async ({ selector, target, text, timeMs, timeout, duration, state }) => {
     try {
-      const res = await controller.waitFor({ selector, text, timeMs, state });
+      const resolvedSelector = selector ?? target;
+      let resolvedTimeMs = timeMs;
+      if (resolvedTimeMs === undefined && duration !== undefined) {
+        resolvedTimeMs = duration <= 30 ? duration * 1000 : duration;
+      }
+      if (resolvedTimeMs === undefined && resolvedSelector === undefined && text === undefined && timeout !== undefined) {
+        resolvedTimeMs = timeout;
+      }
+      const res = await controller.waitFor({
+        selector: resolvedSelector,
+        text,
+        timeMs: resolvedTimeMs,
+        timeout: timeout || 10000,
+        state
+      });
       const msg = res.waitedMs ? `Waited ${res.waitedMs}ms.` : `Waited for ${res.selector || res.text} (${res.state}) in ${res.latencyMs}ms.`;
       return {
         content: [{ type: 'text', text: msg }]
@@ -363,16 +425,19 @@ server.tool(
   'browser_tabs',
   'Manage browser tabs: list active tabs, open new tab, switch tabs, or close tabs',
   {
-    action: z.enum(['list', 'new', 'switch', 'close']).describe('Action: "list", "new", "switch", or "close"'),
-    index: z.number().optional().describe('Tab index (0-based) for switch or close actions'),
+    action: z.enum(['list', 'new', 'switch', 'close']).optional().default('list').describe('Action: "list", "new", "switch", or "close"'),
+    index: z.union([z.number(), z.string()]).optional().describe('Tab index (0-based) for switch or close actions'),
+    tabId: z.union([z.number(), z.string()]).optional().describe('Alias for index (0-based tab index)'),
     url: z.string().optional().describe('Initial URL when opening a new tab'),
     mode: z.enum(['existing', 'isolated'])
       .optional()
       .describe('Browser mode: "existing" attaches to the user\'s already-open Chrome; "isolated" uses a separate clean Chrome instance')
   },
-  async ({ action, index, url, mode }) => {
+  async ({ action, index, tabId, url, mode }) => {
     try {
-      const res = await controller.tabs(action, { index, url, mode });
+      const rawIdx = index ?? tabId;
+      const parsedIdx = rawIdx !== undefined && rawIdx !== null ? Number(rawIdx) : undefined;
+      const res = await controller.tabs(action, { index: parsedIdx, url, mode });
       let message = res.message || 'Success';
       if (action === 'list' && res.tabs) {
         message = res.tabs.map(t => `[${t.index}] ${t.isActive ? '* ' : '  '}${t.title || 'Untitled'} - ${t.url}`).join('\n');
@@ -389,16 +454,23 @@ server.tool(
   }
 );
 
-// 13. Tool: browser_evaluate
+// 14. Tool: browser_evaluate
 server.tool(
   'browser_evaluate',
-  'Execute arbitrary JavaScript code or arrow function in the webpage context',
+  'Execute arbitrary JavaScript code, expression, or arrow function in the webpage context',
   {
-    function: z.string().describe('JavaScript code string or arrow function to evaluate (e.g. "() => document.title")')
+    function: z.string().optional().describe('JavaScript code string or arrow function to evaluate (e.g. "() => document.title")'),
+    expression: z.string().optional().describe('Alias for function (JavaScript expression or IIFE to evaluate)'),
+    script: z.string().optional().describe('Alias for function (JavaScript script to evaluate)'),
+    code: z.string().optional().describe('Alias for function (JavaScript code to evaluate)')
   },
-  async ({ function: code }) => {
+  async ({ function: fnCode, expression, script, code }) => {
     try {
-      const res = await controller.evaluate(code);
+      const resolvedCode = fnCode ?? expression ?? script ?? code;
+      if (!resolvedCode || typeof resolvedCode !== 'string') {
+        throw new Error('Missing required parameter: provide "function" (or "expression" / "script" / "code").');
+      }
+      const res = await controller.evaluate(resolvedCode);
       const resultText = typeof res.result === 'object' ? JSON.stringify(res.result, null, 2) : String(res.result);
       return {
         content: [{ type: 'text', text: resultText ?? 'undefined' }]
